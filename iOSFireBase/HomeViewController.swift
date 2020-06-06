@@ -12,6 +12,13 @@ import FirebaseAuth
 
 class HomeViewController: UIViewController {
   
+  let cellSpacing: CGFloat = 40
+  let cellPeeking: CGFloat = 20
+  var currentScrollOffset: CGPoint?
+  let scrollThreshold: CGFloat = 10
+  var itemWidth: CGFloat?
+  var adjacentItemIndex = 0
+  
   var backgroundView: BackgroundView = {
     let view = BackgroundView()
     view.translatesAutoresizingMaskIntoConstraints = false
@@ -37,6 +44,7 @@ class HomeViewController: UIViewController {
     setupNavigationBar()
     setupSubView()
     setupLayout()
+    setupCollectionView()
   }
   
   func setupNavigationBar() {
@@ -56,7 +64,7 @@ class HomeViewController: UIViewController {
   
   func setupSubView() {
     view.addSubview(backgroundView)
-    backgroundView.addSubview(contentCollectionView)
+    view.addSubview(contentCollectionView)
   }
   
   func setupLayout() {
@@ -67,8 +75,8 @@ class HomeViewController: UIViewController {
     
     contentCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
     contentCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-    contentCollectionView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.height / 2).isActive = true
-    contentCollectionView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+    contentCollectionView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.height / 3 * 2).isActive = true
+    contentCollectionView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0).isActive = true
   }
   
   @objc func logOut() {
@@ -80,6 +88,80 @@ class HomeViewController: UIViewController {
       }
     } catch let signOutError as NSError {
       print ("Error signing out: %@", signOutError)
+    }
+  }
+  
+  func setupCollectionView() {
+    contentCollectionView.delegate = self
+    contentCollectionView.dataSource = self
+    
+    if let flowLayout = contentCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+      flowLayout.scrollDirection = .horizontal
+    }
+    
+    //    contentCollectionView.isPagingEnabled = true
+    
+    contentCollectionView.showsHorizontalScrollIndicator = false
+  }
+}
+
+extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    return Int(scrollThreshold)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ContentCell", for: indexPath) as! ContentCollectionViewCell
+    return cell
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    itemWidth = max(0, collectionView.frame.size.width - 2 * (cellSpacing + cellPeeking))
+    return CGSize(width: itemWidth!, height: collectionView.frame.size.height / 3 * 2)
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    return cellSpacing
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    return 0
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+    let leftAndRightInsets = cellSpacing + cellPeeking
+    return UIEdgeInsets(top: 0, left: leftAndRightInsets, bottom: 0, right: leftAndRightInsets)
+  }
+  
+  public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    currentScrollOffset = scrollView.contentOffset
+  }
+  
+  public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+    let target = targetContentOffset.pointee
+    
+    print(targetContentOffset.pointee)
+    let screenIndex = CGFloat(Int(target.x/UIScreen.main.bounds.width))
+    targetContentOffset.pointee = CGPoint(x: (itemWidth! + cellSpacing) * (screenIndex), y: target.y)
+    print(targetContentOffset.pointee)
+    print("=====")
+  }
+  
+  func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    let visibleRect = CGRect(origin: contentCollectionView.contentOffset, size: contentCollectionView.frame.size)
+    for cell in contentCollectionView.visibleCells as! [ContentCollectionViewCell] where cell.frame.intersects(visibleRect) {
+      let distance = visibleRect.midX - cell.frame.midX
+      if distance.magnitude < 20 {
+        UIView.animate(withDuration: 1, animations: {
+          cell.heightConstraint?.constant = 400
+          cell.layoutIfNeeded()
+        })
+      } else {
+        UIView.animate(withDuration: 1, animations: {
+          cell.heightConstraint?.constant = 200
+          cell.layoutIfNeeded()
+        })
+      }
     }
   }
 }

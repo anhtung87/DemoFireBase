@@ -153,7 +153,7 @@ class LoginViewController: UIViewController {
         guard let strongSelf = self else { return }
         if let user = authResult?.user {
           let destinationVC = HomeViewController()
-          self?.navigationController?.pushViewController(destinationVC, animated: true)
+          strongSelf.navigationController?.pushViewController(destinationVC, animated: true)
         } else {
           print(error)
         }
