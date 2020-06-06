@@ -99,8 +99,6 @@ class HomeViewController: UIViewController {
       flowLayout.scrollDirection = .horizontal
     }
     
-    //    contentCollectionView.isPagingEnabled = true
-    
     contentCollectionView.showsHorizontalScrollIndicator = false
   }
 }
@@ -139,12 +137,8 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
   
   public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
     let target = targetContentOffset.pointee
-    
-    print(targetContentOffset.pointee)
-    let screenIndex = CGFloat(Int(target.x/UIScreen.main.bounds.width))
+    let screenIndex = CGFloat(Int(target.x/(itemWidth! + cellSpacing)))
     targetContentOffset.pointee = CGPoint(x: (itemWidth! + cellSpacing) * (screenIndex), y: target.y)
-    print(targetContentOffset.pointee)
-    print("=====")
   }
   
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -153,7 +147,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
       let distance = visibleRect.midX - cell.frame.midX
       if distance.magnitude < 20 {
         UIView.animate(withDuration: 1, animations: {
-          cell.heightConstraint?.constant = 400
+          cell.heightConstraint?.constant = self.contentCollectionView.frame.height
           cell.layoutIfNeeded()
         })
       } else {
