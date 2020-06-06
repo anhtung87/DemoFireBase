@@ -57,7 +57,7 @@ class ContentCollectionViewCell: UICollectionViewCell {
     smallView.leadingAnchor.constraint(equalTo: customView.leadingAnchor).isActive = true
     smallView.trailingAnchor.constraint(equalTo: customView.trailingAnchor).isActive = true
     smallView.bottomAnchor.constraint(equalTo: customView.bottomAnchor).isActive = true
-    heightConstraint = smallView.heightAnchor.constraint(equalToConstant: 200)
+    heightConstraint = smallView.heightAnchor.constraint(equalToConstant: customView.frame.height / 3 * 2)
     heightConstraint!.isActive = true
   }
 }

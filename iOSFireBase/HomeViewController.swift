@@ -75,7 +75,7 @@ class HomeViewController: UIViewController {
     
     contentCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
     contentCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-    contentCollectionView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.height / 3 * 2).isActive = true
+    contentCollectionView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.height / 2).isActive = true
     contentCollectionView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 0).isActive = true
   }
   
@@ -110,12 +110,14 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ContentCell", for: indexPath) as! ContentCollectionViewCell
+    cell.heightConstraint?.constant = collectionView.frame.height / 3 * 2
+    cell.layoutIfNeeded()
     return cell
   }
   
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     itemWidth = max(0, collectionView.frame.size.width - 2 * (cellSpacing + cellPeeking))
-    return CGSize(width: itemWidth!, height: collectionView.frame.size.height / 3 * 2)
+    return CGSize(width: itemWidth!, height: collectionView.frame.size.height)
   }
   
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -152,7 +154,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
         })
       } else {
         UIView.animate(withDuration: 1, animations: {
-          cell.heightConstraint?.constant = 200
+          cell.heightConstraint?.constant = self.contentCollectionView.frame.height / 3 * 2
           cell.layoutIfNeeded()
         })
       }
